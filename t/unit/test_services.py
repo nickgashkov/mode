@@ -499,10 +499,13 @@ class test_Service:
 
     @pytest.mark.asyncio
     async def test__execute_task__CancelledError(self, *, service):
+        service.crash = AsyncMock()
+        exc = asyncio.CancelledError()
 
         async def raises():
-            raise asyncio.CancelledError()
+            raise exc
         await service._execute_task(raises())
+        service.crash.coro.assert_called_once_with(exc)
 
     @pytest.mark.asyncio
     async def test__execute_task__CancelledError_stopped(self, *, service):

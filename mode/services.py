@@ -768,9 +768,10 @@ class Service(ServiceBase, ServiceCallbacks):
     async def _execute_task(self, task: Awaitable) -> None:
         try:
             await task
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
             if not self.should_stop:
                 self._log_mundane('Terminating cancelled task: %r', task)
+                await self.crash(exc)
         except RuntimeError as exc:
             if 'Event loop is closed' in str(exc):
                 self.log.info('Cancelled task %r: %s', task, exc)
